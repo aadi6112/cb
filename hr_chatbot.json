@@ -1,0 +1,156 @@
+{
+  "info": {
+    "name": "HR Chatbot API",
+    "description": "Multi-user HR Policy Chatbot API",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "API_KEY",
+      "value": "YOUR_API_KEY_HERE"
+    },
+    {
+      "key": "SESSION_TOKEN",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('SESSION_TOKEN', response.session_token);",
+              "    console.log('Session token saved:', response.session_token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{API_KEY}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"aadi6112\",\n  \"email\": \"aadi6112@company.com\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/login",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Chat - Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Session-Token",
+            "value": "{{SESSION_TOKEN}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"What is the vacation policy?\",\n  \"include_history\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/chat/message",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "chat", "message"]
+        }
+      }
+    },
+    {
+      "name": "Chat - Get History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Session-Token",
+            "value": "{{SESSION_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/chat/history?limit=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "chat", "history"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Admin - List Sessions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{API_KEY}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/admin/sessions",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "admin", "sessions"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Session-Token",
+            "value": "{{SESSION_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/logout",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "logout"]
+        }
+      }
+    }
+  ]
+}

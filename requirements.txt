@@ -1,0 +1,14 @@
+flask==2.3.3
+flask-cors==4.0.0
+flask-limiter==3.5.0
+sqlalchemy==2.0.21
+langchain
+langchain-community
+faiss-cpu==1.7.4
+requests==2.31.0
+python-dotenv==1.0.0
+cryptography==41.0.7
+pypdf==3.17.0
+docx2txt==0.8
+unstructured==0.10.30
+python-multipart==0.0.6

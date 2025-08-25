@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f8;
+            --bg-tertiary: #ffffff;
+            
+            --text-primary: #0d1117;
+            --text-secondary: #656d76;
+            --text-tertiary: #8b949e;
+            
+            --border-primary: #d0d7de;
+            --border-secondary: #eaeaea;
+            
+            --success-color: #1a7f37;
+            --warning-color: #bf8700;
+            --error-color: #cf222e;
+            
+            --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-tertiary: #6e7681;
+            
+            --border-primary: #30363d;
+            --border-secondary: #21262d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .admin-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--border-secondary);
+        }
+
+        .btn.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn.primary:hover {
+            background: #0d8c6c;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-secondary);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--bg-secondary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(26, 127, 55, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background: rgba(207, 34, 46, 0.1);
+            color: var(--error-color);
+        }
+
+        .status-warning {
+            background: rgba(191, 135, 0, 0.1);
+            color: var(--warning-color);
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn.view {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.terminate {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 2px solid var(--border-primary);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: var(--error-color);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .message-preview {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .table {
+                font-size: 14px;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">HR Admin Dashboard</h1>
+            <div class="admin-controls">
+                <button class="btn" onclick="exportData()">Export Data</button>
+                <button class="btn primary" onclick="refreshData()">Refresh</button>
+                <button class="btn" onclick="toggleTheme()">Theme</button>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalUsers">-</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeSessions">-</div>
+                <div class="stat-label">Active Sessions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalMessages">-</div>
+                <div class="stat-label">Messages Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgSessionTime">-</div>
+                <div class="stat-label">Avg Session Time</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('users')">Users</button>
+            <button class="tab" onclick="showTab('sessions')">Active Sessions</button>
+            <button class="tab" onclick="showTab('messages')">Recent Messages</button>
+            <button class="tab" onclick="showTab('activity')">User Activity</button>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+        <!-- Users Tab -->
+        <div class="tab-content active" id="users-tab">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">All Users</h3>
+                    <input type="text" class="search-input" placeholder="Search users..." id="userSearch" onkeyup="filterTable('usersTable', this.value)">
+                </div>
+                <div id="usersLoading" class="loading">
+                    <div class="spinner"></div>
+                    Loading users...
+                </div>
+                <table class="table" id="usersTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Created</th>
+                            <th>Last Active</th>
+                            <th>Status</th>
+                            <th>Sessions</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sessions Tab -->
+        <div class="tab-content" id="sessions-tab">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">Active Sessions</h3>
+                    <input type="text" class="search-input" placeholder="Search sessions..." id="sessionSearch" onkeyup="filterTable('sessionsTable', this.value)">
+                </div>
+                <div id="sessionsLoading" class="loading">
+                    <div class="spinner"></div>
+                    Loading sessions...
+                </div>
+                <table class="table" id="sessionsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Session ID</th>
+                            <th>Started</th>
+                            <th>Last Activity</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div class="tab-content" id="messages-tab">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">Recent Messages</h3>
+                    <input type="text" class="search-input" placeholder="Search messages..." id="messageSearch" onkeyup="filterTable('messagesTable', this.value)">
+                </div>
+                <div id="messagesLoading" class="loading">
+                    <div class="spinner"></div>
+                    Loading messages...
+                </div>
+                <table class="table" id="messagesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th>Sources</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messagesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activity Tab -->
+        <div class="tab-content" id="activity-tab">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3 class="table-title">User Activity Summary</h3>
+                </div>
+                <div id="activityLoading" class="loading">
+                    <div class="spinner"></div>
+                    Loading activity...
+                </div>
+                <div id="activityContent" style="display: none; padding: 20px;">
+                    <!-- Activity content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.apiKey = this.getApiKey();
+                this.baseUrl = window.location.origin;
+                this.currentTab = 'users';
+                this.data = {
+                    users: [],
+                    sessions: [],
+                    messages: [],
+                    stats: {}
+                };
+                
+                this.initializeTheme();
+                this.loadAllData();
+                
+                // Auto-refresh every 30 seconds
+                setInterval(() => this.refreshData(), 30000);
+            }
+
+            getApiKey() {
+                let apiKey = localStorage.getItem('admin_api_key');
+                if (!apiKey) {
+                    apiKey = prompt('Enter your organization API key:');
+                    if (apiKey) {
+                        localStorage.setItem('admin_api_key', apiKey);
+                    } else {
+                        alert('API key is required to access the admin dashboard');
+                        window.location.href = '/';
+                        return;
+                    }
+                }
+                return apiKey;
+            }
+
+            initializeTheme() {
+                const savedTheme = localStorage.getItem('admin_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+
+            async loadAllData() {
+                try {
+                    await Promise.all([
+                        this.loadUsers(),
+                        this.loadSessions(),
+                        this.loadMessages(),
+                        this.loadStats()
+                    ]);
+                } catch (error) {
+                    this.showError('Failed to load admin data: ' + error.message);
+                }
+            }
+
+            async loadUsers() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/admin/users`, {
+                        headers: { 'X-API-Key': this.apiKey }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    this.data.users = data.users || [];
+                    this.renderUsers();
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    this.showError('Failed to load users: ' + error.message);
+                    this.data.users = [];
+                    this.renderUsers();
+                }
+            }
+
+            async loadSessions() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/admin/sessions`, {
+                        headers: { 'X-API-Key': this.apiKey }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    this.data.sessions = data.sessions || [];
+                    this.renderSessions();
+                } catch (error) {
+                    console.error('Error loading sessions:', error);
+                    this.showError('Failed to load sessions: ' + error.message);
+                    this.data.sessions = [];
+                    this.renderSessions();
+                }
+            }
+
+            async loadMessages() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/admin/messages/recent?limit=50`, {
+                        headers: { 'X-API-Key': this.apiKey }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    this.data.messages = data.messages || [];
+                    this.renderMessages();
+                } catch (error) {
+                    console.error('Error loading messages:', error);
+                    this.showError('Failed to load messages: ' + error.message);
+                    this.data.messages = [];
+                    this.renderMessages();
+                }
+            }
+
+            async loadStats() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/admin/stats`, {
+                        headers: { 'X-API-Key': this.apiKey }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    const stats = data.stats || {};
+                    
+                    document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                    document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
+                    document.getElementById('totalMessages').textContent = stats.messages_today || 0;
+                    document.getElementById('avgSessionTime').textContent = stats.avg_session_duration || 'N/A';
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                    this.showError('Failed to load statistics: ' + error.message);
+                }
+            }
+
+            renderUsers() {
+                const loading = document.getElementById('usersLoading');
+                const table = document.getElementById('usersTable');
+                const tbody = document.getElementById('usersTableBody');
+
+                loading.style.display = 'none';
+                table.style.display = 'table';
+
+                tbody.innerHTML = this.data.users.map(user => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                                <strong>${user.username}</strong>
+                            </div>
+                        </td>
+                        <td>${user.email || 'No email'}</td>
+                        <td class="timestamp">${this.formatDate(user.created_at)}</td>
+                        <td class="timestamp">${this.formatDate(user.last_active)}</td>
+                        <td>
+                            <span class="status-badge ${user.is_active ? 'status-active' : 'status-inactive'}">
+                                ${user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${user.session_count || 0}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view" onclick="admin.viewUserDetails('${user.id}')">View</button>
+                                <button class="action-btn terminate" onclick="admin.terminateUserSessions('${user.id}')">End Sessions</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderSessions() {
+                const loading = document.getElementById('sessionsLoading');
+                const table = document.getElementById('sessionsTable');
+                const tbody = document.getElementById('sessionsTableBody');
+
+                loading.style.display = 'none';
+                table.style.display = 'table';
+
+                tbody.innerHTML = this.data.sessions.map(session => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="user-avatar">${session.username.charAt(0).toUpperCase()}</div>
+                                <strong>${session.username}</strong>
+                            </div>
+                        </td>
+                        <td><code>${session.session_id.substring(0, 8)}...</code></td>
+                        <td class="timestamp">${this.formatDate(session.created_at)}</td>
+                        <td class="timestamp">${this.formatDate(session.last_activity)}</td>
+                        <td class="timestamp">${this.formatDate(session.expires_at)}</td>
+                        <td>
+                            <span class="status-badge ${this.getSessionStatus(session.expires_at)}">
+                                ${this.getSessionStatusText(session.expires_at)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view" onclick="admin.viewSessionDetails('${session.session_id}')">View</button>
+                                <button class="action-btn terminate" onclick="admin.terminateSession('${session.session_id}')">End</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderMessages() {
+                const loading = document.getElementById('messagesLoading');
+                const table = document.getElementById('messagesTable');
+                const tbody = document.getElementById('messagesTableBody');
+
+                loading.style.display = 'none';
+                table.style.display = 'table';
+
+                tbody.innerHTML = this.data.messages.map(msg => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="user-avatar">${msg.user.charAt(0).toUpperCase()}</div>
+                                <strong>${msg.user}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${msg.type === 'user' ? 'status-active' : 'status-warning'}">
+                                ${msg.type}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="message-preview" title="${msg.content}">
+                                ${msg.content}
+                            </div>
+                        </td>
+                        <td>
+                            ${msg.sources.length > 0 ? msg.sources.join(', ') : '-'}
+                        </td>
+                        <td class="timestamp">${this.formatDate(msg.timestamp)}</td>
+                        <td>
+                            <button class="action-btn view" onclick="admin.viewFullMessage('${msg.id}')">View Full</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            getSessionStatus(expiresAt) {
+                const now = new Date();
+                const expires = new Date(expiresAt);
+                const hoursUntilExpiry = (expires - now) / (1000 * 60 * 60);
+
+                if (hoursUntilExpiry < 0) return 'status-inactive';
+                if (hoursUntilExpiry < 2) return 'status-warning';
+                return 'status-active';
+            }
+
+            getSessionStatusText(expiresAt) {
+                const now = new Date();
+                const expires = new Date(expiresAt);
+                const hoursUntilExpiry = (expires - now) / (1000 * 60 * 60);
+
+                if (hoursUntilExpiry < 0) return 'Expired';
+                if (hoursUntilExpiry < 2) return 'Expiring';
+                return 'Active';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return 'Never';
+                
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                if (diffHours < 24) return `${diffHours}h ago`;
+                if (diffDays < 7) return `${diffDays}d ago`;
+                
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+
+            showTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+
+                this.currentTab = tabName;
+            }
+
+            async viewUserDetails(userId) {
+                const user = this.data.users.find(u => u.id === userId);
+                if (user) {
+                    const details = `User Details:
+                    
+Username: ${user.username}
+Email: ${user.email || 'Not provided'}
+Created: ${new Date(user.created_at).toLocaleString()}
+Last Active: ${user.last_active ? new Date(user.last_active).toLocaleString() : 'Never'}
+Status: ${user.is_active ? 'Active' : 'Inactive'}
+Active Sessions: ${user.session_count || 0}`;
+                    
+                    alert(details);
+                }
+            }
+
+            async terminateUserSessions(userId) {
+                if (confirm('Are you sure you want to terminate all sessions for this user?')) {
+                    try {
+                        const response = await fetch(`${this.baseUrl}/api/v1/admin/users/${userId}/terminate-sessions`, {
+                            method: 'POST',
+                            headers: { 'X-API-Key': this.apiKey }
+                        });
+
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            alert(`Successfully terminated ${data.terminated_sessions} sessions`);
+                            this.refreshData();
+                        } else {
+                            alert('Failed to terminate sessions: ' + data.error);
+                        }
+                    } catch (error) {
+                        alert('Error terminating sessions: ' + error.message);
+                    }
+                }
+            }
+
+            async viewSessionDetails(sessionId) {
+                const session = this.data.sessions.find(s => s.session_id === sessionId);
+                if (session) {
+                    const details = `Session Details:
+                    
+Session ID: ${session.session_id}
+User: ${session.username}
+Started: ${new Date(session.created_at).toLocaleString()}
+Last Activity: ${new Date(session.last_activity).toLocaleString()}
+Expires: ${new Date(session.expires_at).toLocaleString()}
+Status: ${this.getSessionStatusText(session.expires_at)}`;
+                    
+                    alert(details);
+                }
+            }
+
+            async terminateSession(sessionId) {
+                if (confirm('Are you sure you want to terminate this session?')) {
+                    try {
+                        const response = await fetch(`${this.baseUrl}/api/v1/admin/sessions/${sessionId}/terminate`, {
+                            method: 'POST',
+                            headers: { 'X-API-Key': this.apiKey }
+                        });
+
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            alert('Session terminated successfully');
+                            this.refreshData();
+                        } else {
+                            alert('Failed to terminate session: ' + data.error);
+                        }
+                    } catch (error) {
+                        alert('Error terminating session: ' + error.message);
+                    }
+                }
+            }
+
+            async viewFullMessage(messageId) {
+                const message = this.data.messages.find(m => m.id === messageId);
+                if (message) {
+                    const details = `Full Message:
+                    
+User: ${message.user}
+Type: ${message.type}
+Time: ${new Date(message.timestamp).toLocaleString()}
+Sources: ${message.sources.length > 0 ? message.sources.join(', ') : 'None'}
+
+Content:
+${message.content}`;
+                    
+                    alert(details);
+                }
+            }
+
+            async refreshData() {
+                console.log('Refreshing admin data...');
+                await this.loadAllData();
+            }
+
+            exportData() {
+                const data = {
+                    users: this.data.users,
+                    sessions: this.data.sessions,
+                    messages: this.data.messages,
+                    exportTime: new Date().toISOString()
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hr-admin-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            showError(message) {
+                const errorEl = document.getElementById('errorMessage');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                setTimeout(() => {
+                    errorEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Global functions
+        function showTab(tabName) {
+            admin.showTab(tabName);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('admin_theme', newTheme);
+        }
+
+        function refreshData() {
+            admin.refreshData();
+        }
+
+        function exportData() {
+            admin.exportData();
+        }
+
+        function filterTable(tableId, searchTerm) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        // Initialize admin dashboard
+        let admin;
+        document.addEventListener('DOMContentLoaded', function() {
+            admin = new AdminDashboard();
+        });
+    </script>
+</body>
+</html>

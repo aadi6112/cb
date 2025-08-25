@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Policy Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Mode */
+            --primary-color: #10a37f;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f8;
+            --bg-tertiary: #ffffff;
+            --bg-chat: #ffffff;
+            
+            --text-primary: #0d1117;
+            --text-secondary: #656d76;
+            --text-tertiary: #8b949e;
+            
+            --border-primary: #d0d7de;
+            --border-secondary: #eaeaea;
+            
+            --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode */
+            --primary-color: #10a37f;
+            --bg-primary: #212121;
+            --bg-secondary: #2f2f2f;
+            --bg-tertiary: #2f2f2f;
+            --bg-chat: #212121;
+            
+            --text-primary: #ececf1;
+            --text-secondary: #c5c5d2;
+            --text-tertiary: #8e8ea0;
+            
+            --border-primary: #4e4f60;
+            --border-secondary: #3e3f4b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .main-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-primary);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Top controls */
+        .top-controls {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-secondary);
+        }
+
+        .user-info {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            display: none;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 768px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 400px;
+        }
+
+        .login-form {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 24px;
+            border: 1px solid var(--border-secondary);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .login-button {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .login-button:hover:not(:disabled) {
+            background: #0d8c6c;
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-button.loading {
+            color: transparent;
+        }
+
+        .login-button .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .login-button.loading .loading-spinner {
+            display: block;
+        }
+
+        .login-error {
+            background: #ff4444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .api-key-section {
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-primary);
+        }
+
+        .api-key-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .api-key-help {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .quick-setup {
+            background: #ff9500;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Chat Interface */
+        .chat-interface {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100vh;
+            padding-top: 0;
+        }
+
+        .chat-header {
+            background: var(--bg-primary);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-button {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-button:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            background: var(--bg-chat);
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border-primary);
+            border-radius: 2px;
+        }
+
+        /* Messages */
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: messageAppear 0.3s ease;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .message-sources {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+        }
+
+        .message.bot .message-sources {
+            border-top-color: var(--border-primary);
+        }
+
+        .sources-label {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .source-item {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 2px 4px 2px 0;
+            font-size: 11px;
+        }
+
+        .message.bot .source-item {
+            background: var(--border-secondary);
+            color: var(--text-secondary);
+        }
+
+        /* Simple Typing Indicator */
+        .typing-indicator {
+            display: none;
+            margin-bottom: 20px;
+            justify-content: flex-start;
+        }
+
+        .typing-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            animation: typingPulse 1.5s infinite ease-in-out;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 16px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-secondary);
+            position: sticky;
+            bottom: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            max-width: 100%;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease;
+            resize: none;
+            min-height: 20px;
+            max-height: 120px;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .message-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .send-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #0d8c6c;
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-button.sending {
+            color: transparent;
+        }
+
+        .send-button .send-spinner {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .send-button.sending .send-spinner {
+            display: block;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quick-action {
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .quick-action:hover {
+            background: var(--border-secondary);
+        }
+
+        .quick-action-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .quick-action-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typingPulse {
+            0%, 60%, 100% { 
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            30% { 
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                padding-top: 50px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="main-spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+    
+    <!-- Top Controls -->
+    <div class="top-controls">
+        <div class="user-info" id="userInfo">
+            <span id="currentUser"></span>
+        </div>
+        <button class="theme-toggle" id="themeToggle">
+            <span id="themeIcon">●</span>
+        </button>
+    </div>
+    
+    <div class="app-container">
+        <!-- Login Screen -->
+        <div class="login-screen" id="loginScreen">
+            <h1 class="login-title">HR Policy Assistant</h1>
+            <p class="login-subtitle">Your intelligent companion for HR policies and procedures</p>
+            
+            <div class="login-form">
+                <div class="api-key-section">
+                    <div class="api-key-title">Organization API Key</div>
+                    <div class="api-key-help">
+                        Enter your organization's API key to access HR policies
+                    </div>
+                    <input type="password" class="form-input" id="apiKeyInput" placeholder="Enter API key..." autocomplete="off">
+                    <a href="#" class="quick-setup" onclick="showSetupHelp()">Need help?</a>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="usernameInput">Username</label>
+                    <input type="text" class="form-input" id="usernameInput" placeholder="aadi6112" value="aadi6112" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="emailInput">Email (Optional)</label>
+                    <input type="email" class="form-input" id="emailInput" placeholder="aadi6112@company.com" autocomplete="email">
+                </div>
+                
+                <button class="login-button" id="loginButton">
+                    <span id="loginButtonText">Sign In</span>
+                    <div class="loading-spinner"></div>
+                </button>
+                
+                <div class="login-error" id="loginError"></div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-interface" id="chatInterface">
+            <div class="chat-header">
+                <h2 class="chat-title">HR Policy Assistant</h2>
+                <button class="logout-button" id="logoutButton">Sign Out</button>
+            </div>
+            
+            <div class="chat-container" id="chatContainer">
+                <!-- Welcome Message -->
+                <div class="welcome-message" id="welcomeMessage">
+                    <h2 class="welcome-title">Welcome!</h2>
+                    <p class="welcome-subtitle">Ask me anything about HR policies and I'll help you find the information you need.</p>
+                    
+                    <div class="quick-actions">
+                        <div class="quick-action" onclick="sendQuickMessage('What are the employee benefits?')">
+                            <div class="quick-action-title">Employee Benefits</div>
+                            <div class="quick-action-desc">Health insurance, retirement plans, perks</div>
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('What is the vacation policy?')">
+                            <div class="quick-action-title">Leave Policies</div>
+                            <div class="quick-action-desc">Vacation, sick leave, time-off procedures</div>
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('How do performance reviews work?')">
+                            <div class="quick-action-title">Performance Reviews</div>
+                            <div class="quick-action-desc">Review process and career development</div>
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('What is the code of conduct?')">
+                            <div class="quick-action-title">Code of Conduct</div>
+                            <div class="quick-action-desc">Workplace ethics and compliance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <div class="input-container">
+                        <textarea 
+                            id="messageInput" 
+                            class="message-input" 
+                            placeholder="Ask about HR policies..." 
+                            rows="1"
+                            autocomplete="off"
+                        ></textarea>
+                    </div>
+                    <button id="sendButton" class="send-button">
+                        <span>→</span>
+                        <div class="send-spinner"></div>
+                    </button>
+                </div>
+                
+                <!-- Typing Indicator at bottom -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-content">
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HRChatbotApp {
+            constructor() {
+                this.apiKey = localStorage.getItem('hr_api_key') || '';
+                this.sessionToken = localStorage.getItem('hr_session_token') || '';
+                this.username = localStorage.getItem('hr_username') || '';
+                this.baseUrl = window.location.origin;
+                this.isLoading = false;
+                
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.initializeTheme();
+                
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    this.checkExistingSession();
+                }, 800);
+            }
+
+            initializeElements() {
+                // Login elements
+                this.loginScreen = document.getElementById('loginScreen');
+                this.apiKeyInput = document.getElementById('apiKeyInput');
+                this.usernameInput = document.getElementById('usernameInput');
+                this.emailInput = document.getElementById('emailInput');
+                this.loginButton = document.getElementById('loginButton');
+                this.loginButtonText = document.getElementById('loginButtonText');
+                this.loginError = document.getElementById('loginError');
+
+                // Chat elements
+                this.chatInterface = document.getElementById('chatInterface');
+                this.chatContainer = document.getElementById('chatContainer');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.welcomeMessage = document.getElementById('welcomeMessage');
+                this.logoutButton = document.getElementById('logoutButton');
+
+                // Top controls
+                this.userInfo = document.getElementById('userInfo');
+                this.currentUser = document.getElementById('currentUser');
+                this.themeToggle = document.getElementById('themeToggle');
+                this.themeIcon = document.getElementById('themeIcon');
+
+                // Pre-fill saved data
+                if (this.apiKey) this.apiKeyInput.value = this.apiKey;
+                if (this.username) this.usernameInput.value = this.username;
+            }
+
+            initializeEventListeners() {
+                // Login
+                this.loginButton.addEventListener('click', () => this.handleLogin());
+                [this.apiKeyInput, this.usernameInput, this.emailInput].forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.handleLogin();
+                    });
+                });
+
+                // Chat
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                this.messageInput.addEventListener('input', () => this.autoResize());
+
+                // Logout
+                this.logoutButton.addEventListener('click', () => this.handleLogout());
+
+                // Theme
+                this.themeToggle.addEventListener('click', () => this.toggleTheme());
+            }
+
+            initializeTheme() {
+                const savedTheme = localStorage.getItem('hr_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                this.updateThemeIcon(savedTheme);
+            }
+
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('hr_theme', newTheme);
+                this.updateThemeIcon(newTheme);
+            }
+
+            updateThemeIcon(theme) {
+                this.themeIcon.textContent = theme === 'dark' ? '☀' : '●';
+            }
+
+            async checkExistingSession() {
+                if (this.sessionToken && this.apiKey) {
+                    try {
+                        const response = await fetch(`${this.baseUrl}/api/v1/chat/history?limit=1`, {
+                            headers: { 'X-Session-Token': this.sessionToken }
+                        });
+
+                        if (response.ok) {
+                            this.showChatInterface();
+                            this.showUserInfo(this.username);
+                            return;
+                        }
+                    } catch (error) {
+                        console.log('Session check failed:', error);
+                    }
+                }
+
+                this.clearSession();
+                this.showLoginScreen();
+            }
+
+            async handleLogin() {
+                if (this.isLoading) return;
+
+                const apiKey = this.apiKeyInput.value.trim();
+                const username = this.usernameInput.value.trim();
+                const email = this.emailInput.value.trim();
+
+                if (!apiKey) {
+                    this.showLoginError('Please enter your organization API key');
+                    this.apiKeyInput.focus();
+                    return;
+                }
+
+                if (!username) {
+                    this.showLoginError('Please enter your username');
+                    this.usernameInput.focus();
+                    return;
+                }
+
+                this.setLoginLoading(true);
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-Key': apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            email: email || undefined
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        this.apiKey = apiKey;
+                        this.sessionToken = data.session_token;
+                        this.username = data.username;
+
+                        localStorage.setItem('hr_api_key', apiKey);
+                        localStorage.setItem('hr_session_token', data.session_token);
+                        localStorage.setItem('hr_username', data.username);
+
+                        this.showChatInterface();
+                        this.showUserInfo(data.username);
+                        this.hideLoginError();
+                    } else {
+                        this.showLoginError(data.error || 'Login failed');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    this.showLoginError('Connection error. Please check if the server is running.');
+                } finally {
+                    this.setLoginLoading(false);
+                }
+            }
+
+            async handleLogout() {
+                try {
+                    if (this.sessionToken) {
+                        await fetch(`${this.baseUrl}/api/v1/auth/logout`, {
+                            method: 'POST',
+                            headers: { 'X-Session-Token': this.sessionToken }
+                        });
+                    }
+                } catch (error) {
+                    console.log('Logout request failed:', error);
+                }
+
+                this.clearSession();
+                this.showLoginScreen();
+            }
+
+            clearSession() {
+                this.sessionToken = '';
+                this.apiKey = '';
+                this.username = '';
+                
+                localStorage.removeItem('hr_session_token');
+                localStorage.removeItem('hr_api_key');
+                localStorage.removeItem('hr_username');
+                
+                this.hideUserInfo();
+                
+                // Clear chat and restore welcome
+                this.chatContainer.innerHTML = this.getWelcomeMessageHTML();
+            }
+
+            showLoginScreen() {
+                this.loginScreen.style.display = 'flex';
+                this.chatInterface.style.display = 'none';
+                setTimeout(() => this.apiKeyInput.focus(), 100);
+            }
+
+            showChatInterface() {
+                this.loginScreen.style.display = 'none';
+                this.chatInterface.style.display = 'flex';
+                setTimeout(() => this.messageInput.focus(), 100);
+            }
+
+            setLoginLoading(loading) {
+                this.isLoading = loading;
+                this.loginButton.disabled = loading;
+                this.loginButton.classList.toggle('loading', loading);
+                this.loginButtonText.textContent = loading ? 'Signing In...' : 'Sign In';
+            }
+
+            showLoginError(message) {
+                this.loginError.textContent = message;
+                this.loginError.style.display = 'block';
+                setTimeout(() => this.hideLoginError(), 5000);
+            }
+
+            hideLoginError() {
+                this.loginError.style.display = 'none';
+            }
+
+            showUserInfo(username) {
+                this.currentUser.textContent = username;
+                this.userInfo.style.display = 'block';
+            }
+
+            hideUserInfo() {
+                this.userInfo.style.display = 'none';
+            }
+
+            autoResize() {
+                this.messageInput.style.height = 'auto';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+            }
+
+            async sendMessage(messageText = null) {
+                if (this.isLoading) return;
+
+                const message = messageText || this.messageInput.value.trim();
+                if (!message) return;
+
+                this.setSendingState(true);
+                
+                // Add user message immediately and keep it visible
+                this.addMessage(message, 'user');
+                
+                if (!messageText) {
+                    this.messageInput.value = '';
+                    this.messageInput.style.height = 'auto';
+                }
+                
+                this.showTypingIndicator();
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/v1/chat/message`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Session-Token': this.sessionToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            include_history: true
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    this.hideTypingIndicator();
+
+                    if (response.ok && data.success) {
+                        this.addMessage(data.response, 'bot', data.sources);
+                    } else {
+                        if (response.status === 401) {
+                            this.addMessage('Your session has expired. Please sign in again.', 'bot');
+                            setTimeout(() => this.handleLogout(), 2000);
+                        } else {
+                            this.addMessage(`Sorry, I encountered an error: ${data.error || 'Unknown error'}`, 'bot');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Chat error:', error);
+                    this.hideTypingIndicator();
+                    this.addMessage('I apologize, but I\'m having trouble connecting. Please check your connection and try again.', 'bot');
+                }
+
+                this.setSendingState(false);
+                this.messageInput.focus();
+            }
+
+            addMessage(text, sender, sources = null) {
+                // Remove welcome message only on first real message
+                const welcomeMessage = this.chatContainer.querySelector('.welcome-message');
+                if (welcomeMessage && sender === 'user') {
+                    welcomeMessage.remove();
+                }
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                let sourcesHtml = '';
+                if (sources && sources.length > 0) {
+                    sourcesHtml = `
+                        <div class="message-sources">
+                            <div class="sources-label">Sources:</div>
+                            ${sources.map(source => `<span class="source-item">${source}</span>`).join('')}
+                        </div>
+                    `;
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-text">${text}</div>
+                        ${sourcesHtml}
+                    </div>
+                `;
+                
+                this.chatContainer.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                setTimeout(() => {
+                    this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+                }, 50);
+
+                return messageDiv;
+            }
+
+            setSendingState(sending) {
+                this.isLoading = sending;
+                this.messageInput.disabled = sending;
+                this.sendButton.disabled = sending;
+                this.sendButton.classList.toggle('sending', sending);
+            }
+
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'flex';
+            }
+
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+
+            getWelcomeMessageHTML() {
+                return `
+                    <div class="welcome-message" id="welcomeMessage">
+                        <h2 class="welcome-title">Welcome!</h2>
+                        <p class="welcome-subtitle">Ask me anything about HR policies and I'll help you find the information you need.</p>
+                        
+                        <div class="quick-actions">
+                            <div class="quick-action" onclick="app.sendMessage('What are the employee benefits?')">
+                                <div class="quick-action-title">Employee Benefits</div>
+                                <div class="quick-action-desc">Health insurance, retirement plans, perks</div>
+                            </div>
+                            <div class="quick-action" onclick="app.sendMessage('What is the vacation policy?')">
+                                <div class="quick-action-title">Leave Policies</div>
+                                <div class="quick-action-desc">Vacation, sick leave, time-off procedures</div>
+                            </div>
+                            <div class="quick-action" onclick="app.sendMessage('How do performance reviews work?')">
+                                <div class="quick-action-title">Performance Reviews</div>
+                                <div class="quick-action-desc">Review process and career development</div>
+                            </div>
+                            <div class="quick-action" onclick="app.sendMessage('What is the code of conduct?')">
+                                <div class="quick-action-title">Code of Conduct</div>
+                                <div class="quick-action-desc">Workplace ethics and compliance</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Global functions
+        function sendQuickMessage(message) {
+            if (window.app) {
+                window.app.sendMessage(message);
+            }
+        }
+
+        function showSetupHelp() {
+            alert(`To get an API key:
+
+1. Run: python setup_organization.py "Your Company" "yourcompany.com"
+2. Copy the API key from the output
+3. Paste it in the API Key field above
+
+The API key identifies your organization and allows access to your HR policies.`);
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            window.app = new HRChatbotApp();
+        });
+    </script>
+</body>
+</html>
