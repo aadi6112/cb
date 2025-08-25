@@ -14,7 +14,7 @@ class Config:
     USE_OPENAI = os.getenv('USE_OPENAI', 'True').lower() == 'true'
     
     # OpenAI Configuration
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
     OPENAI_MODEL_NAME = os.getenv('OPENAI_MODEL_NAME', 'gpt-3.5-turbo')
     OPENAI_EMBEDDING_MODEL = os.getenv('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small')
     
@@ -93,4 +93,5 @@ class Config:
         os.makedirs(cls.VECTOR_STORE_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(cls.SSL_CERT), exist_ok=True)
         
+
         return True
